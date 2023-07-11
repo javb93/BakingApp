@@ -1,13 +1,16 @@
 package types
 
+import "gorm.io/gorm"
+
 type Recipe struct {
-	ID          string       `json:"id" :"ID"`
+	gorm.Model
 	Name        string       `json:"name" :"name"`
-	PeopleQty   int          `json:"peopleQty" :"people_Qty"`
-	Ingredients []Ingredient `json:"ingredients"`
+	PeopleQty   int          `json:"peopleQty" :"peopleQty"`
+	Ingredients []Ingredient `gorm:"many2many:recipe_ingredients" json:"ingredients"`
 }
 
 type Ingredient struct {
+	gorm.Model
 	Name     string  `json:"name"`
 	Quantity float64 `json:"quantity"`
 }

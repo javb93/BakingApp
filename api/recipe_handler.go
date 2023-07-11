@@ -3,29 +3,18 @@ package api
 import (
 	"BakingApp/types"
 	"encoding/json"
+	"gorm.io/gorm"
 	"net/http"
 )
 
-func HandleGetRecipes(w http.ResponseWriter, r *http.Request) {
-	recipe := types.Recipe{
-		ID:        "123",
-		Name:      "Pancakes",
-		PeopleQty: 4,
-		Ingredients: []types.Ingredient{
-			{Name: "Flour", Quantity: 250},
-			{Name: "Milk", Quantity: 500},
-			{Name: "Eggs", Quantity: 2},
-		},
+func HandleGetRecipes(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var recipes []types.Recipe
+		result := db.Model(&types.Recipe{}).Preload("Ingredients").Find(&recipes)
+		if result.Error != nil {
+			http.Error(w, result.Error.Error(), http.StatusInternalServerError)
+			return
+		}
+		json.NewEncoder(w).Encode(recipes)
 	}
-	jsonData, err := json.Marshal(recipe)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	// Set the Content-Type header to application/json
-	w.Header().Set("Content-Type", "application/json")
-
-	// Write the JSON response
-	w.Write(jsonData)
 }
