@@ -1,8 +1,6 @@
 package api
 
 import (
-	"BakingApp/db"
-	"BakingApp/types"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 	"log"
@@ -12,19 +10,21 @@ import (
 func setupRoutes(router *mux.Router, database *gorm.DB) {
 	router.HandleFunc("/", HandleGet).Methods("GET")
 	router.HandleFunc("/recipes", HandleGetRecipes(database)).Methods("GET")
+	router.HandleFunc("/recipes", HandlePostRecipes(database)).Methods("POST")
 }
 
-func StartServer() {
-	database, err := db.ConnectDB()
-	// AutoMigrate to make sure the Recipe table exists
-	err = database.AutoMigrate(&types.Recipe{})
-	err = database.AutoMigrate(&types.Ingredient{})
+func StartServer(database *gorm.DB) {
 
-	if err != nil {
-		log.Fatalf("Could not migrate the database: %v", err)
-	}
 	router := mux.NewRouter()
 	setupRoutes(router, database)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
+}
+
+// For testing purposes
+func GetRouter(database *gorm.DB) *mux.Router {
+	router := mux.NewRouter()
+	setupRoutes(router, database)
+
+	return router
 }

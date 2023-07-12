@@ -6,5 +6,5 @@ import (
 )
 
 func HandleGet(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, `{"message": "Hello, worlds!"}`)
+	fmt.Fprintf(w, `{"message": "Hello, world!"}`)
 }

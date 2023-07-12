@@ -5,7 +5,6 @@ import (
 	"BakingApp/types"
 	"bytes"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -17,17 +16,11 @@ import (
 func dbInit(db *gorm.DB) {
 	db.AutoMigrate(&types.Ingredient{}, &types.Recipe{})
 }
-func server(db *gorm.DB) *mux.Router {
-
-	router := mux.NewRouter()
-	router.HandleFunc("/recipes", api.HandleGetRecipes(db)).Methods("GET")
-	return router
-}
 
 func TestGetRecipes(t *testing.T) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	dbInit(db)
-	db.Preload("Ingredients").Create(&types.Recipe{
+	db.Create(&types.Recipe{
 		Name:      "Pancakes",
 		PeopleQty: 4,
 		Ingredients: []types.Ingredient{
@@ -42,7 +35,7 @@ func TestGetRecipes(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	server(db).ServeHTTP(rr, req)
+	api.GetRouter(db).ServeHTTP(rr, req)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
@@ -71,6 +64,7 @@ func TestGetRecipes(t *testing.T) {
 	assert.Equal(t, 3, len(resultRecipes[0].Ingredients))
 	assert.Equal(t, expectedRecipe.Ingredients[0].Name, resultRecipes[0].Ingredients[0].Name)
 }
+
 func TestHandlePostRecipe(t *testing.T) {
 	// Open an SQLite in-memory database for testing
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
@@ -79,7 +73,7 @@ func TestHandlePostRecipe(t *testing.T) {
 	dbInit(db)
 
 	// Initialize the mux router with the database connection
-	r := server(db)
+	r := api.GetRouter(db)
 
 	// Create a new recipe to send in the request body
 	newRecipe := &types.Recipe{Name: "New Recipe"}
