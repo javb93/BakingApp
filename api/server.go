@@ -10,7 +10,11 @@ import (
 func setupRoutes(router *mux.Router, database *gorm.DB) {
 	router.HandleFunc("/", HandleGet).Methods("GET")
 	router.HandleFunc("/recipes", HandleGetRecipes(database)).Methods("GET")
+	router.HandleFunc("/recipe/{id}", HandleGetIndRecipe(database)).Methods("GET")
 	router.HandleFunc("/recipes", HandlePostRecipes(database)).Methods("POST")
+	router.HandleFunc("/recipes/{id}", HandlePutRecipes(database)).Methods("PUT")
+	router.HandleFunc("/recipes/{id}", HandleDeleteRecipe(database)).Methods("DELETE")
+
 }
 
 func StartServer(database *gorm.DB) {
